@@ -93,6 +93,7 @@ export default function Player() {
     isPiPActive,
     togglePiP,
   } = useVideoPlayer({ videoRef, id, media_type, season, episode });
+  console.log("isInitializing", isInitializing);
   const {
     server,
     servers,
