@@ -1,7 +1,7 @@
 import { encodeBase64Url } from "@/lib/base64";
 import { fetchWithTimeout } from "@/lib/fetch-timeout";
 import { NextRequest, NextResponse } from "next/server";
-import { validateBackendToken } from "../1/route";
+import { validateBackendToken } from "../0/route";
 
 type Source = {
   file: string;
