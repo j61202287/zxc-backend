@@ -52,96 +52,53 @@ export async function GET(req: NextRequest) {
     const sourceLink =
       media_type === "tv"
         ? `https://api.madplay.site/api/rogflix?id=${id}&season=${season}&episode=${episode}&type=series`
-        : `https://cdn.madplay.site/api/hls/unknown/${id}/master.m3u8`;
+        : `https://api.madplay.site/api/rogflix?id=${id}&type=movie`;
 
-    if (media_type === "tv") {
-      // const res = await fetch(sourceLink, {
-      //   headers: {
-      //     "User-Agent": "Mozilla/5.0",
-      //     Referer: "https://uembed.xyz/",
-      //   },
-      // });
+    // const res = await fetch(sourceLink, {
+    //   headers: {
+    //     "User-Agent": "Mozilla/5.0",
+    //     Referer: "https://uembed.xyz/",
+    //   },
+    // });
 
-      const res = await fetchWithTimeout(
-        sourceLink,
-        {
-          headers: {
-            "User-Agent": "Mozilla/5.0",
-            Referer: "https://uembed.xyz/",
-          },
+    const res = await fetchWithTimeout(
+      sourceLink,
+      {
+        headers: {
+          "User-Agent": "Mozilla/5.0",
+          Referer: "https://uembed.xyz/",
         },
-        5000
-      ); // 5-second timeout
+      },
+      5000
+    ); // 5-second timeout
 
-      if (!res.ok) {
-        return NextResponse.json(
-          { success: false, error: "Upstream request failed" },
-          { status: res.status }
-        );
-      }
-
-      const data = await res.json();
-
-      if (!Array.isArray(data) || data.length === 0) {
-        return NextResponse.json(
-          { success: false, error: "No m3u8 stream found" },
-          { status: 404 }
-        );
-      }
-      const firstSource = data.find((f) => f.title === "English").file;
-      if (!sourceLink)
-        return NextResponse.json(
-          { success: false, error: "No English stream found" },
-          { status: 404 }
-        );
-
-      return NextResponse.json({
-        success: true,
-        link: firstSource,
-        type: "hls",
-      });
-    } else {
-      // const head = await fetch(sourceLink, {
-      //   method: "HEAD",
-      //   headers: {
-      //     "User-Agent": "Mozilla/5.0",
-      //     Referer: "https://madplay.site/",
-      //   },
-      // });
-      const head = await fetchWithTimeout(
-        sourceLink,
-        {
-          method: "HEAD",
-          headers: {
-            "User-Agent": "Mozilla/5.0",
-            Referer: "https://madplay.site/",
-          },
-        },
-        5000
-      ); // 5-second timeout
-      if (head.status === 404) {
-        return NextResponse.json(
-          { success: false, error: "Movie stream not found" },
-          { status: 404 }
-        );
-      }
-      if (!head.ok) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Upstream error",
-            status: head.status,
-          },
-          { status: head.status }
-        );
-      }
-      const proxy = "https://damp-bonus-5625.mosangfour.workers.dev/?url=";
-      return NextResponse.json({
-        success: true,
-        link: proxy + encodeBase64Url(sourceLink),
-        type: "hls",
-      });
+    if (!res.ok) {
+      return NextResponse.json(
+        { success: false, error: "Upstream request failed" },
+        { status: res.status }
+      );
     }
+
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      return NextResponse.json(
+        { success: false, error: "No m3u8 stream found" },
+        { status: 404 }
+      );
+    }
+    const firstSource = data.find((f) => f.title === "English").file;
+    if (!sourceLink)
+      return NextResponse.json(
+        { success: false, error: "No English stream found" },
+        { status: 404 }
+      );
+
+    return NextResponse.json({
+      success: true,
+      link: firstSource,
+      type: "hls",
+    });
   } catch (error) {
     return NextResponse.json(
       { success: false, error: "Internal server error" },
