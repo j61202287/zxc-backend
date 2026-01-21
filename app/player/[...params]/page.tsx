@@ -43,6 +43,7 @@ import Episodes from "./episodes";
 import Failed from "./failed";
 import useIntro from "@/hook/intro";
 import PlayerServer from "./servers";
+import { useVdrkSubtitle } from "@/hook/subtitle-2";
 /* ================= TYPES ================= */
 
 export default function Player() {
@@ -166,13 +167,22 @@ export default function Player() {
     setHoverTime(null);
   };
   // SUBTITLE HOOK
-  const { data: data_sub } = useLibreSubsTV({
-    imdbId: metadata?.external_ids?.imdb_id ?? "",
+  // const { data: data_sub } = useLibreSubsTV({
+  //   imdbId: metadata?.external_ids?.imdb_id ?? "",
+  //   season: media_type === "tv" ? season : undefined,
+  //   episode: media_type === "tv" ? episode : undefined,
+  // });
+  const { data: vdrk_sub } = useVdrkSubtitle({
+    tmdbId: metadata?.id ?? null,
+    media_type: media_type,
     season: media_type === "tv" ? season : undefined,
     episode: media_type === "tv" ? episode : undefined,
   });
+
   const vttUrl = useSubtitleUrl(selectedSub);
-  const englishDefault = (data_sub ?? []).find((s) => s.language === "en")?.url;
+  const englishDefault = (vdrk_sub ?? []).find((s) =>
+    s.label.startsWith("English"),
+  )?.file;
   useEffect(() => {
     if (englishDefault) {
       setSelectedSub(englishDefault);
@@ -182,7 +192,7 @@ export default function Player() {
   const allSeason = metadata?.seasons?.length ?? 0;
 
   const activeSeason = metadata?.seasons?.find(
-    (s) => s.season_number === season
+    (s) => s.season_number === season,
   );
 
   const episodeCount = activeSeason?.episode_count ?? 0;
@@ -368,14 +378,14 @@ export default function Player() {
                     idx === serverIndex
                       ? "lg:-translate-x-15 -translate-x-10 opacity-100"
                       : idx === serverIndex + 1
-                      ? "lg:-translate-x-10 -translate-x-5 opacity-100"
-                      : idx === serverIndex - 1
-                      ? "lg:-translate-x-10 -translate-x-5 opacity-100"
-                      : idx === serverIndex - 2
-                      ? "lg:opacity-50"
-                      : idx === serverIndex + 2
-                      ? "lg:opacity-50"
-                      : ""
+                        ? "lg:-translate-x-10 -translate-x-5 opacity-100"
+                        : idx === serverIndex - 1
+                          ? "lg:-translate-x-10 -translate-x-5 opacity-100"
+                          : idx === serverIndex - 2
+                            ? "lg:opacity-50"
+                            : idx === serverIndex + 2
+                              ? "lg:opacity-50"
+                              : ""
                   }`}
                 >
                   <h1
@@ -385,14 +395,14 @@ export default function Player() {
                       idx === serverIndex
                         ? "lg:text-4xl text-xl font-bold"
                         : idx === serverIndex + 1
-                        ? "lg:text-2xl text-base text-foreground/35"
-                        : idx === serverIndex - 1
-                        ? "lg:text-2xl text-base text-foreground/35"
-                        : idx === serverIndex - 2
-                        ? "lg:text-lg text-sm text-foreground/15"
-                        : idx === serverIndex + 2
-                        ? "lg:text-lg text-sm text-foreground/15"
-                        : ""
+                          ? "lg:text-2xl text-base text-foreground/35"
+                          : idx === serverIndex - 1
+                            ? "lg:text-2xl text-base text-foreground/35"
+                            : idx === serverIndex - 2
+                              ? "lg:text-lg text-sm text-foreground/15"
+                              : idx === serverIndex + 2
+                                ? "lg:text-lg text-sm text-foreground/15"
+                                : ""
                     }`}
                   >
                     {s.name}
@@ -402,14 +412,14 @@ export default function Player() {
                       idx === serverIndex
                         ? "text-foreground/80"
                         : idx === serverIndex + 1
-                        ? " text-foreground/30"
-                        : idx === serverIndex - 1
-                        ? " text-foreground/30"
-                        : idx === serverIndex - 2
-                        ? "text-foreground/10"
-                        : idx === serverIndex + 2
-                        ? "text-foreground/10"
-                        : ""
+                          ? " text-foreground/30"
+                          : idx === serverIndex - 1
+                            ? " text-foreground/30"
+                            : idx === serverIndex - 2
+                              ? "text-foreground/10"
+                              : idx === serverIndex + 2
+                                ? "text-foreground/10"
+                                : ""
                     }`}
                   >
                     {s.desc}
@@ -865,7 +875,7 @@ export default function Player() {
                     audioTracks={audioTracks}
                     selectedAudio={selectedAudio}
                     setSelectedAudio={setSelectedAudio}
-                    data_sub={data_sub ?? []}
+                    data_sub={vdrk_sub ?? []}
                     selectedSub={selectedSub}
                     setSelectedSub={setSelectedSub}
                     subtitleOffset={subtitleOffset}
@@ -1123,7 +1133,7 @@ export default function Player() {
                       audioTracks={audioTracks}
                       selectedAudio={selectedAudio}
                       setSelectedAudio={setSelectedAudio}
-                      data_sub={data_sub ?? []}
+                      data_sub={vdrk_sub ?? []}
                       selectedSub={selectedSub}
                       setSelectedSub={setSelectedSub}
                       subtitleOffset={subtitleOffset}

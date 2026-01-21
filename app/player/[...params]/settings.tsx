@@ -87,7 +87,7 @@ export default function PlayerSettings({
       lockTimer();
     }
   };
-
+  console.log(":", data_sub);
   return (
     <div
       className="relative"
@@ -254,14 +254,14 @@ export default function PlayerSettings({
                   active={"" === selectedSub}
                 />
 
-                {data_sub.map((s) => (
+                {data_sub.map((s, idx) => (
                   <SubtitleButton
-                    key={s.id}
-                    active={s.url === selectedSub}
-                    label={s.display}
-                    flag={s.flagUrl}
+                    key={idx}
+                    active={s.file === selectedSub}
+                    label={s.label}
+                    // flag={s.flagUrl}
                     onClick={() => {
-                      setSelectedSub(s.url);
+                      setSelectedSub(s.file);
                       setOpenSub(false);
                     }}
                   />

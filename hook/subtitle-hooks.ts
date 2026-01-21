@@ -10,6 +10,8 @@ export interface Subtitle {
   isHearingImpaired?: boolean;
   flagUrl?: string;
   source?: string;
+  label: string
+  file: string
 }
 
 interface UseSubtitlesParams {
