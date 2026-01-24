@@ -191,7 +191,9 @@ export default function Player() {
   )?.file;
   useEffect(() => {
     if (englishDefault) {
-      setSelectedSub(englishDefault);
+      setSelectedSub(
+        `/api/subtitle-edit?url=${encodeURIComponent(englishDefault)}`,
+      );
     }
   }, [englishDefault]);
 
