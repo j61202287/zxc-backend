@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     if (
       !referer.includes("/api/") &&
       !referer.includes("localhost") &&
-      !referer.includes("http://192.168.1.6:3000/") &&
+      !referer.includes("http://192.168.1.4:3000/") &&
       !referer.includes("https://www.zxcstream.xyz/")
     ) {
       return NextResponse.json(
@@ -48,37 +48,28 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const pathLink = `https://enc-dec.app/api/enc-vidlink?text=${id}`;
-
-    const pathLinkResponse = await fetchWithTimeout(
-      pathLink,
-      {
-        headers: {
-          "User-Agent": "Mozilla/5.0",
-          Referer: "https://vidlink.pro/",
-        },
-      },
-      5000,
-    );
-
-    const pathLinkData = await pathLinkResponse.json();
-
     const sourceLink =
       media_type === "tv"
-        ? `https://vidlink.pro/api/b/tv/${pathLinkData.result}/${season}/${episode}`
-        : `https://vidlink.pro/api/b/movie/${pathLinkData.result}`;
+        ? `https://vasurajput12345-fleet2.hf.space/api/extract?tmdbId=${id}&type=tv&season=${season}&episode=${episode}`
+        : `https://vasurajput12345-fleet2.hf.space/api/extract?tmdbId=${id}&type=movie`;
+
+    // const res = await fetch(sourceLink, {
+    //   headers: {
+    //     "User-Agent": "Mozilla/5.0",
+    //     Referer: "https://abhishek1996-streambuddy.hf.space/",
+    //   },
+    // });
 
     const res = await fetchWithTimeout(
       sourceLink,
       {
         headers: {
           "User-Agent": "Mozilla/5.0",
-          Referer: "https://vidlink.pro/",
+          Referer: "https://streamixapp.pages.dev/",
         },
       },
-      8000,
-    );
-
+      10000,
+    ); // 5-second timeout
     if (!res.ok) {
       return NextResponse.json(
         { success: false, error: "Upstream request failed" },
@@ -88,72 +79,25 @@ export async function GET(req: NextRequest) {
 
     const data = await res.json();
 
-    if (!data.stream.playlist) {
+    if (!data?.m3u8Url) {
       return NextResponse.json(
-        { success: false, error: "No sources found" },
+        { success: false, error: "No m3u8 stream found" },
         { status: 404 },
       );
     }
-
-    const m3u8Url = data.stream.playlist; // e.g. https://storm.vodvidl.site/proxy/file2/.../playlist.m3u8?...
-
-    // Extract only the pathname (everything starting from /proxy/...)
-    const urlObj = new URL(m3u8Url);
-    const proxyPath = urlObj.pathname; // → /proxy/file2/.../playlist.m3u8
-
-    // Optional: preserve query params if needed (e.g. host=), but we don't need headers anymore
-    const search = urlObj.search; // usually has ?headers=...&host=...
-
-    //proxy links
-    //https://damp-bonus-5625.mosangfour.workers.dev/
-    //https://square-darkness-1efb.amenohabakiri174.workers.dev/
-    //https://orange-poetry-e481.jindaedalus2.workers.dev/
-    //https://long-frog-ec4e.coupdegrace21799.workers.dev/
-    //https://morning-unit-723b.jinluxus303.workers.dev/
-    //https://dark-scene-567a.jinluxuz.workers.dev/
-
-    const proxyLinks = [
-      `https://blue-hat-477a.jerometecson333.workers.dev`,
-      `https://damp-bonus-5625.mosangfour.workers.dev`,
-      `https://square-darkness-1efb.amenohabakiri174.workers.dev`,
-      `https://orange-poetry-e481.jindaedalus2.workers.dev`,
-      `https://long-frog-ec4e.coupdegrace21799.workers.dev`,
-      `https://morning-unit-723b.jinluxus303.workers.dev`,
-      `https://dark-scene-567a.jinluxuz.workers.dev`,
-    ];
-
-    let finalProxy: string | null = null;
-    for (const proxy of proxyLinks) {
-      const testUrl = `${proxy}${proxyPath}${search}`;
-      try {
-        const head = await fetch(testUrl, {
-          method: "HEAD",
-          signal: AbortSignal.timeout(1500),
-        });
-        if (head.ok) {
-          finalProxy = testUrl;
-          break;
-        }
-      } catch {
-        // try next proxy
-      }
-    }
-    if (!finalProxy) {
-      return NextResponse.json(
-        { success: false, error: "All proxies down" },
-        { status: 503 },
-      );
-    }
-
+    // const proxy = "https://damp-bonus-5625.mosangfour.workers.dev/?u=";
     return NextResponse.json({
-      success: 200,
-      link: finalProxy,
+      success: true,
+      link:
+        "https://vasurajput12345-fleet2.hf.space/api/stream?url=" +
+        encodeURIComponent(data.m3u8Url),
       type: "hls",
     });
-  } catch (err) {
+  } catch (error) {
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 },
     );
   }
 }
+//https://streamixapp.pages.dev/

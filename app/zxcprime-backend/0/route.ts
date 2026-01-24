@@ -51,15 +51,8 @@ export async function GET(req: NextRequest) {
 
     const sourceLink =
       media_type === "tv"
-        ? `https://api.madplay.site/api/rogflix?id=${id}&season=${season}&episode=${episode}&type=series`
-        : `https://api.madplay.site/api/rogflix?id=${id}&type=movie`;
-
-    // const res = await fetch(sourceLink, {
-    //   headers: {
-    //     "User-Agent": "Mozilla/5.0",
-    //     Referer: "https://uembed.xyz/",
-    //   },
-    // });
+        ? `https://cdn.madplay.site/rog/?id=${id}&type=tv&season=${season}&episode=${episode}`
+        : `https://cdn.madplay.site/rog/?id=${id}&type=movie`;
 
     const res = await fetchWithTimeout(
       sourceLink,
@@ -87,17 +80,19 @@ export async function GET(req: NextRequest) {
         { status: 404 },
       );
     }
-    const firstSource = data.find((f) => f.title === "English").file;
-    if (!sourceLink)
+
+    const firstSource = data[0].file;
+
+    if (!firstSource)
       return NextResponse.json(
         { success: false, error: "No English stream found" },
         { status: 404 },
       );
-
+    const type = /\.m3u8(\?|$)/i.test(firstSource.file) ? "hls" : "mp4";
     return NextResponse.json({
       success: true,
       link: firstSource,
-      type: "hls",
+      type: type,
     });
   } catch (error) {
     return NextResponse.json(

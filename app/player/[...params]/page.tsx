@@ -74,6 +74,10 @@ export default function Player() {
     media_type,
     id,
   });
+
+  const title = metadata?.title || metadata?.name || "";
+  const date = metadata?.release_date ?? metadata?.first_air_date;
+  const year = date ? String(new Date(date).getFullYear()) : "";
   const imdbId = metadata?.external_ids?.imdb_id ?? null;
   const {
     isPlaying,
@@ -114,6 +118,8 @@ export default function Player() {
     imdbId,
     containerRef,
     defaultServer,
+    title,
+    year,
   });
   const {
     quality,

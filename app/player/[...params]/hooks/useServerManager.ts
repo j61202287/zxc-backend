@@ -23,6 +23,8 @@ export function useServerManager({
   season,
   episode,
   imdbId,
+  title,
+  year,
   defaultServer,
 }: {
   containerRef: RefObject<HTMLDivElement | null>;
@@ -31,22 +33,79 @@ export function useServerManager({
   season: number;
   episode: number;
   imdbId: string | null;
+  title: string;
+  year: string;
   defaultServer: number;
 }) {
   const [servers, setServers] = useState<ServerTypes[]>([
-    { name: "ZXC Server", server: 0, status: "queue", desc: "" },
-    { name: "Main Server", server: 1, status: "queue", desc: "" },
-    { name: "PRIME Server", server: 99, status: "queue", desc: "" },
-    { name: "Server 2", server: 2, status: "queue", desc: "" },
-    { name: "Server 3", server: 3, status: "queue", desc: "" },
-    { name: "Server 4", server: 4, status: "queue", desc: "" },
-    { name: "Server 5", server: 5, status: "queue", desc: "" },
-    { name: "Español Server", server: 6, status: "queue", desc: "" },
-    { name: "Latino Server", server: 7, status: "queue", desc: "" },
-    { name: "Backup 1", server: 50, status: "queue", desc: "" },
-    { name: "Backup 2", server: 60, status: "queue", desc: "" },
-    { name: "Backup 3", server: 70, status: "queue", desc: "" },
+    {
+      name: "Primary Server",
+      server: 0,
+      status: "queue",
+      desc: "Main streaming server",
+    },
+    {
+      name: "4K Server",
+      server: 1,
+      status: "queue",
+      desc: "Supports 4K playback",
+    },
+    {
+      name: "Secondary Server 4",
+      server: 2,
+      status: "queue",
+      desc: "Fallback streaming server",
+    },
+    {
+      name: "Primary Backup Server",
+      server: 3,
+      status: "queue",
+      desc: "Alternate main server",
+    },
+    {
+      name: "Secondary Server 2",
+      server: 4,
+      status: "queue",
+      desc: "Additional fallback server",
+    },
+    {
+      name: "Secondary Server 3",
+      server: 5,
+      status: "queue",
+      desc: "Additional fallback server",
+    },
+    {
+      name: "Latino Server",
+      server: 6,
+      status: "queue",
+      desc: "Latin American streams",
+    },
+    {
+      name: "PRIME Server",
+      server: 7,
+      status: "queue",
+      desc: "High-speed priority server",
+    },
+    {
+      name: "Backup Server A",
+      server: 50,
+      status: "queue",
+      desc: "Backup server for failover",
+    },
+    {
+      name: "Backup Server B",
+      server: 60,
+      status: "queue",
+      desc: "Backup server for failover",
+    },
+    {
+      name: "Backup Server C",
+      server: 70,
+      status: "queue",
+      desc: "Backup server for failover",
+    },
   ]);
+
   const [serverIndex, setServerIndex] = useState(defaultServer);
   const [serversFailed, setAllServersFailed] = useState(false);
   const server = servers[serverIndex].server;
@@ -65,6 +124,8 @@ export function useServerManager({
     episode,
     server,
     imdbId,
+    title,
+    year,
   });
 
   const updateServerStatus = (index: number, status: ServerTypes["status"]) =>

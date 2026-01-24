@@ -4,19 +4,20 @@ import { validateBackendToken } from "../0/route";
 
 export async function GET(req: NextRequest) {
   try {
-    const id = req.nextUrl.searchParams.get("a");
-    const media_type = req.nextUrl.searchParams.get("b");
+    const tmdbId = req.nextUrl.searchParams.get("a");
+    const mediaType = req.nextUrl.searchParams.get("b");
     const season = req.nextUrl.searchParams.get("c");
     const episode = req.nextUrl.searchParams.get("d");
-    const imdbId = req.nextUrl.searchParams.get("e");
+    const title = req.nextUrl.searchParams.get("f");
+    const year = req.nextUrl.searchParams.get("g");
     const ts = Number(req.nextUrl.searchParams.get("gago"));
     const token = req.nextUrl.searchParams.get("putanginamo")!;
 
     const f_token = req.nextUrl.searchParams.get("f_token")!;
-    if (!id || !media_type || !ts || !token) {
+    if (!tmdbId || !mediaType || !title || !year || !ts || !token) {
       return NextResponse.json(
         { success: false, error: "need token" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -24,13 +25,13 @@ export async function GET(req: NextRequest) {
     if (Date.now() - Number(ts) > 8000) {
       return NextResponse.json(
         { success: false, error: "Invalid token" },
-        { status: 403 }
+        { status: 403 },
       );
     }
-    if (!validateBackendToken(id, f_token, ts, token)) {
+    if (!validateBackendToken(tmdbId, f_token, ts, token)) {
       return NextResponse.json(
         { success: false, error: "Invalid token" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -39,60 +40,85 @@ export async function GET(req: NextRequest) {
     if (
       !referer.includes("/api/") &&
       !referer.includes("localhost") &&
-      !referer.includes("http://192.168.1.4:3000/") &&
+      !referer.includes("http://192.168.1.6:3000/") &&
       !referer.includes("https://www.zxcstream.xyz/")
     ) {
       return NextResponse.json(
         { success: false, error: "Forbidden" },
-        { status: 403 }
+        { status: 403 },
       );
     }
+    const qs = new URLSearchParams();
+    qs.set("title", title);
+    qs.set("mediaType", mediaType);
+    qs.set("year", year);
+    qs.set("tmdbId", tmdbId);
+    if (mediaType === "tv" && season) qs.set("seasonId", season);
+    if (mediaType === "tv" && episode) qs.set("episodeId", episode);
 
-    const upstreamM3u8 =
-      media_type === "tv"
-        ? `https://scrennnifu.click/serial/${imdbId}/${season}/${episode}/playlist.m3u8`
-        : `https://scrennnifu.click/movie/${imdbId}/playlist.m3u8`;
+    const pathLink = `https://api.videasy.net/myflixerzupcloud/sources-with-title?${qs}`;
 
-    try {
-      const upstream = await fetchWithTimeout(
-        upstreamM3u8,
-        {
-          headers: {
-            Referer: "https://screenify.fun/",
-            Origin: "https://screenify.fun/",
-            "User-Agent": "Mozilla/5.0",
-            Accept: "*/*",
-          },
-          cache: "no-store",
+    const pathLinkResponse = await fetchWithTimeout(
+      pathLink,
+      {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+          Referer: "https://videasy.net/",
         },
-        12000 // 5-second timeout
-      );
-
-      if (!upstream.ok) {
-        return NextResponse.json(
-          { success: false, error: `${upstream.status}` },
-          { status: 502 }
-        );
-      }
-    } catch (err) {
+      },
+      5000,
+    );
+    if (!pathLinkResponse.ok) {
       return NextResponse.json(
-        { success: false, error: "Timed out" },
-        { status: 504 }
+        { success: false, error: "Upstream request failed" },
+        { status: pathLinkResponse.status },
+      );
+    }
+    const encrypted = await pathLinkResponse.text();
+
+    const decrypted = await fetchWithTimeout(
+      "https://enc-dec.app/api/dec-videasy",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: encrypted, id: String(tmdbId) }),
+      },
+      8000,
+    );
+    if (!decrypted.ok) {
+      return NextResponse.json(
+        { success: false, error: "Upstream request failed" },
+        { status: decrypted.status },
       );
     }
 
-    const sourceLink = `/api/zxc?id=${media_type}-${imdbId}${
-      media_type === "tv" ? `-${season}-${episode}` : ""
-    }`;
+    const decryptedData = await decrypted.json();
+
+    const sources = decryptedData.result.sources;
+
+    if (!Array.isArray(sources) || sources.length === 0) {
+      return NextResponse.json(
+        { success: false, error: "No m3u8 stream found" },
+        { status: 404 },
+      );
+    }
+    console.log("sourcessourcessources", sources);
+    const finalM3u8 = encodeURIComponent(
+      sources.find((f) => f.quality === "1080p")?.url ??
+        sources.at(0)?.url ??
+        "",
+    );
+    const proxiedUrl = `https://damp-bird-f3a9.jerometecsonn.workers.dev/?m3u8-proxy=${finalM3u8}`;
     return NextResponse.json({
-      success: true,
-      link: sourceLink,
+      success: 200,
+      link: proxiedUrl,
       type: "hls",
     });
   } catch (err) {
     return NextResponse.json(
       { success: false, error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
