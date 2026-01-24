@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     if (!id || !media_type || !ts || !token) {
       return NextResponse.json(
         { success: false, error: "need token" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -24,13 +24,13 @@ export async function GET(req: NextRequest) {
     if (Date.now() - Number(ts) > 8000) {
       return NextResponse.json(
         { success: false, error: "Invalid token" },
-        { status: 403 }
+        { status: 403 },
       );
     }
     if (!validateBackendToken(id, f_token, ts, token)) {
       return NextResponse.json(
         { success: false, error: "Invalid token" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -44,14 +44,14 @@ export async function GET(req: NextRequest) {
     ) {
       return NextResponse.json(
         { success: false, error: "Forbidden" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     const sourceLink =
       media_type === "tv"
-        ? `https://vasurajput12345-fleet1.hf.space/api/extract?tmdbId=${id}&type=tv&season=${season}&episode=${episode}`
-        : `https://vasurajput12345-fleet1.hf.space/api/extract?tmdbId=${id}&type=movie`;
+        ? `https://vasurajput12345-fleet2.hf.space/api/extract?tmdbId=${id}&type=tv&season=${season}&episode=${episode}`
+        : `https://vasurajput12345-fleet2.hf.space/api/extract?tmdbId=${id}&type=movie`;
 
     // const res = await fetch(sourceLink, {
     //   headers: {
@@ -65,15 +65,15 @@ export async function GET(req: NextRequest) {
       {
         headers: {
           "User-Agent": "Mozilla/5.0",
-          Referer: "https://vasurajput12345-fleet1.hf.space/",
+          Referer: "https://vasurajput12345-fleet2.hf.space/",
         },
       },
-      10000
+      10000,
     ); // 5-second timeout
     if (!res.ok) {
       return NextResponse.json(
         { success: false, error: "Upstream request failed" },
-        { status: res.status }
+        { status: res.status },
       );
     }
 
@@ -82,21 +82,21 @@ export async function GET(req: NextRequest) {
     if (!data?.m3u8Url) {
       return NextResponse.json(
         { success: false, error: "No m3u8 stream found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
     // const proxy = "https://damp-bonus-5625.mosangfour.workers.dev/?u=";
     return NextResponse.json({
       success: true,
       link:
-        "https://vasurajput12345-fleet1.hf.space/api/stream?url=" +
+        "https://vasurajput12345-fleet3.hf.space/api/stream?url=" +
         encodeURIComponent(data.m3u8Url),
       type: "hls",
     });
   } catch (error) {
     return NextResponse.json(
       { success: false, error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
