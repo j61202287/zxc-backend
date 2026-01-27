@@ -51,8 +51,8 @@ export async function GET(req: NextRequest) {
 
     const sourceLink =
       media_type === "tv"
-        ? `https://cdn.madplay.site/vxr/?id=${id}&type=tv&season=${season}&episode=${episode}`
-        : `https://cdn.madplay.site/vxr/?id=${id}&type=movie`;
+        ? `https://cdn.madplay.site/rog/?id=${id}&type=tv&season=${season}&episode=${episode}`
+        : `https://cdn.madplay.site/rog/?id=${id}&type=movie`;
 
     const res = await fetchWithTimeout(
       sourceLink,
@@ -88,11 +88,11 @@ export async function GET(req: NextRequest) {
         { success: false, error: "No English stream found" },
         { status: 404 },
       );
-    // const type = /\.m3u8(\?|$)/i.test(firstSource.file) ? "hls" : "mp4";
+    const type = /\.m3u8(\?|$)/i.test(firstSource.file) ? "hls" : "mp4";
     return NextResponse.json({
       success: true,
       link: firstSource,
-      type: "hls",
+      type: type,
     });
   } catch (error) {
     return NextResponse.json(
