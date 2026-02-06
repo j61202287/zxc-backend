@@ -152,10 +152,10 @@ export async function GET(req: NextRequest) {
       .filter((d: any) => d?.url && typeof d.url === "string")
       .sort((a: any, b: any) => (b.resolution || 0) - (a.resolution || 0));
     const videoUrl = sortedDownloads[0].url;
-
+    // https://still-butterfly-9b3e.zxcprime360.workers.dev/
     return NextResponse.json({
       success: true,
-      link: `https://still-butterfly-9b3e.zxcprime360.workers.dev/?url=${encodeURIComponent(videoUrl)}`,
+      link: `https://damp-bonus-5625.mosangfour.workers.dev/?url=${encodeURIComponent(videoUrl)}`,
       type: videoUrl.includes(".m3u8") ? "hls" : "mp4",
       // headers: {
       //   "User-Agent": "okhttp/4.12.0",
