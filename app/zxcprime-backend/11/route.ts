@@ -58,10 +58,12 @@ export async function GET(req: NextRequest) {
       "Accept-Language": "en-US,en;q=0.5",
       Accept: "application/json",
       "User-Agent": "okhttp/4.12.0",
-      Referer: "https://movieboxapp.in",
-      "X-Forwarded-For": "197.178.200.45",
-      "CF-Connecting-IP": "197.178.200.45",
-      "X-Real-IP": "197.178.200.45",
+      Referer:
+        "https://fmoviesunblocked.net/spa/videoPlayPage/movies/the-housemaid-0salyuvbRw2?id=2123398053372510440&type=/movie/detail",
+      "X-Forwarded-For": "41.215.42.92",
+      "CF-Connecting-IP": "41.215.42.92",
+      "X-Real-IP": "41.215.42.92",
+      Origin: "https://fmoviesunblocked.net",
     };
 
     // Search for movie/TV show
