@@ -41,7 +41,8 @@ export async function GET(req: NextRequest) {
       !referer.includes("/api/") &&
       !referer.includes("localhost") &&
       !referer.includes("http://192.168.1.6:3000/") &&
-      !referer.includes("https://www.zxcstream.xyz/")
+      !referer.includes("https://www.zxcstream.xyz/") &&
+      !referer.includes("https://zxcstream-xyz.netlify.app/")
     ) {
       return NextResponse.json(
         { success: false, error: "Forbidden" },
