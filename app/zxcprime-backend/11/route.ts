@@ -127,11 +127,22 @@ export async function GET(req: NextRequest) {
     const sourcesJson = await sourcesRes.json();
     const sources = sourcesJson?.data?.data || sourcesJson?.data || sourcesJson;
     const downloads = sources?.downloads || [];
-    if (!downloads.length)
+
+    if (!downloads.length) {
       return NextResponse.json(
-        { success: false, error: "No download sources" },
+        {
+          success: false,
+          error: "No download sources",
+          debug: {
+            sourcesJson, // full raw response
+            normalizedSources: sources, // after your fallback normalization
+            subjectId, // the subjectId used
+            params: params.toString(), // season/episode info if applicable
+          },
+        },
         { status: 404 },
       );
+    }
 
     // Pick highest resolution
     const sortedDownloads = downloads
