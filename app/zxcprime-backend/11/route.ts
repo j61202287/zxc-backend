@@ -1,59 +1,5 @@
-import { fetchWithTimeout } from "@/lib/fetch-timeout";
 import { NextRequest, NextResponse } from "next/server";
 import { validateBackendToken } from "@/lib/validate-token";
-let lastWorkingIP: string | null = null;
-
-async function testIP(ip: string, title: string, mediaType: string) {
-  try {
-    const host = "h5.aoneroom.com";
-    const baseUrl = `https://${host}`;
-    const headers = {
-      "X-Client-Info": '{"timezone":"Africa/Nairobi"}',
-      "Accept-Language": "en-US,en;q=0.5",
-      Accept: "application/json",
-      "User-Agent": "okhttp/4.12.0",
-      "X-Forwarded-For": ip,
-      "CF-Connecting-IP": ip,
-      "X-Real-IP": ip,
-      Origin: "https://fmoviesunblocked.net",
-    };
-    const res = await fetch(`${baseUrl}/wefeed-h5-bff/web/subject/search`, {
-      method: "POST",
-      headers: { ...headers, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        keyword: title,
-        page: 1,
-        perPage: 1,
-        subjectType: mediaType === "tv" ? 2 : 1,
-      }),
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
-// Get a working IP (sticky + retry)
-async function getWorkingIP(title: string, mediaType: string) {
-  // 1. Try last working IP
-  if (lastWorkingIP && (await testIP(lastWorkingIP, title, mediaType))) {
-    return lastWorkingIP;
-  }
-
-  // 2. Retry random IPs up to 5 times
-  for (let i = 0; i < 5; i++) {
-    const ip = africanLikeIP();
-    if (await testIP(ip, title, mediaType)) {
-      lastWorkingIP = ip; // save working IP
-      return ip;
-    }
-  }
-
-  // 3. Fallback to random IP even if it might fail
-  const fallbackIP = africanLikeIP();
-  lastWorkingIP = fallbackIP;
-  return fallbackIP;
-}
 
 export async function GET(req: NextRequest) {
   try {
@@ -102,8 +48,9 @@ export async function GET(req: NextRequest) {
         { status: 403 },
       );
     }
-    const ip = await getWorkingIP(title, mediaType);
     // -------- MovieBox Logic --------
+    const randomIP =
+      africanIPs[Math.floor(Math.random() * africanIPs.length)].ip;
     const host = "h5.aoneroom.com";
     const baseUrl = `https://${host}`;
     const headers: Record<string, string> = {
@@ -113,9 +60,9 @@ export async function GET(req: NextRequest) {
       "User-Agent": "okhttp/4.12.0",
       Referer:
         "https://fmoviesunblocked.net/spa/videoPlayPage/movies/the-housemaid-0salyuvbRw2?id=2123398053372510440&type=/movie/detail",
-      "X-Forwarded-For": ip,
-      "CF-Connecting-IP": ip,
-      "X-Real-IP": ip,
+      "X-Forwarded-For": randomIP,
+      "CF-Connecting-IP": randomIP,
+      "X-Real-IP": randomIP,
       Origin: "https://fmoviesunblocked.net",
     };
     // Search for movie/TV show
@@ -183,32 +130,21 @@ export async function GET(req: NextRequest) {
     const sourcesJson = await sourcesRes.json();
     const sources = sourcesJson?.data?.data || sourcesJson?.data || sourcesJson;
     const downloads = sources?.downloads || [];
-
-    if (!downloads.length) {
+    if (!downloads.length)
       return NextResponse.json(
-        {
-          success: false,
-          error: "No download sources",
-          debug: {
-            sourcesJson, // full raw response
-            normalizedSources: sources, // after your fallback normalization
-            subjectId, // the subjectId used
-            params: params.toString(), // season/episode info if applicable
-          },
-        },
+        { success: false, error: "No download sources" },
         { status: 404 },
       );
-    }
 
     // Pick highest resolution
     const sortedDownloads = downloads
       .filter((d: any) => d?.url && typeof d.url === "string")
       .sort((a: any, b: any) => (b.resolution || 0) - (a.resolution || 0));
     const videoUrl = sortedDownloads[0].url;
-    // https://still-butterfly-9b3e.zxcprime360.workers.dev/
+
     return NextResponse.json({
       success: true,
-      link: `https://damp-bonus-5625.mosangfour.workers.dev/?url=${encodeURIComponent(videoUrl)}`,
+      link: `https://still-butterfly-9b3e.zxcprime360.workers.dev/?url=${encodeURIComponent(videoUrl)}`,
       type: videoUrl.includes(".m3u8") ? "hls" : "mp4",
       // headers: {
       //   "User-Agent": "okhttp/4.12.0",
@@ -233,3 +169,25 @@ function africanLikeIP() {
     Math.floor(Math.random() * 256),
   ].join(".");
 }
+const africanIPs = [
+  { ip: "41.89.77.202" },
+  { ip: "41.60.12.155" },
+  { ip: "102.165.45.78" },
+  { ip: "105.112.98.33" },
+  { ip: "154.72.201.144" },
+  { ip: "160.19.88.202" },
+  { ip: "165.225.10.67" },
+  { ip: "196.25.189.90" },
+  { ip: "197.177.248.181" },
+  { ip: "41.204.33.77" },
+  { ip: "102.48.11.200" },
+  { ip: "105.16.99.122" },
+  { ip: "154.123.45.67" },
+  { ip: "160.45.210.89" },
+  { ip: "165.44.78.210" },
+  { ip: "196.218.56.34" },
+  { ip: "197.210.77.45" },
+  { ip: "41.79.33.111" },
+  { ip: "102.215.144.22" },
+  { ip: "105.56.78.99" },
+];
